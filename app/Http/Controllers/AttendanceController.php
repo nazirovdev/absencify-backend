@@ -186,7 +186,7 @@ class AttendanceController extends Controller
             ])->post('https://fcm.googleapis.com/fcm/send', [
                 'to' => $deviceToken,
                 'data' => [
-					'title' => 'Izin Siswa',
+                    'title' => 'Izin Siswa',
                     'body' => $message
                 ],
                 'notification' => [
@@ -229,7 +229,7 @@ class AttendanceController extends Controller
 
     public function exportTemplate()
     {
-        return (new AttendanceExport)->download('attendance_template_'.Carbon::now()->microsecond.'.xlsx');
+        return (new AttendanceExport)->download('attendance_template_' . Carbon::now()->microsecond . '.xlsx');
     }
 
     public function exportPDF(Request $request)
@@ -301,15 +301,6 @@ class AttendanceController extends Controller
             ]);
         }
 
-        if (Carbon::create($tanggalSekarang)->isWeekend()) {
-            return response()->json([
-                'data' => [
-                    'isError' => true,
-                    'message' => 'Presensi tidak tersedia pada akhir pekan'
-                ]
-            ]);
-        }
-
         if ($attendance != null && $attendance->tanggal_presensi == $tanggalSekarang) {
             if ($attendance->jam_masuk != null && $attendance->jam_pulang != null) {
                 return response()->json([
@@ -347,7 +338,7 @@ class AttendanceController extends Controller
                     'data' => [
                         'isError' => false,
                         'message' => 'Presensi pulang berhasil',
-                        'attendance' => collect($attendance->load(['student:id,nama,classroom_id', 'student.classroom:id,nama']))->map(function($data, $key){
+                        'attendance' => collect($attendance->load(['student:id,nama,classroom_id', 'student.classroom:id,nama']))->map(function ($data, $key) {
                             return $data;
                         })->except('student_id', 'created_at', 'updated_at', 'student.id', 'student.classroom_id', 'student.classroom.id')
                     ]
@@ -382,20 +373,20 @@ class AttendanceController extends Controller
             }
         }
 
-        if ($jamSekarang >= $scheduleAttendance->jam_pulang) {
-            return response()->json([
-                'data' => [
-                    'isError' => true,
-                    'message' => 'Presensi Masuk telah lewat dari KBM',
-                ]
-            ]);
-        }
-
         if ($scheduleAttendance == null) {
             return response()->json([
                 'data' => [
                     'isError' => true,
                     'message' => 'Presensi tidak tersedia',
+                ]
+            ]);
+        }
+
+        if ($jamSekarang >= $scheduleAttendance->jam_pulang) {
+            return response()->json([
+                'data' => [
+                    'isError' => true,
+                    'message' => 'Presensi Masuk telah lewat dari KBM',
                 ]
             ]);
         }
@@ -421,7 +412,7 @@ class AttendanceController extends Controller
                 'data' => [
                     'isError' => false,
                     'message' => 'Presensi Masuk berhasil, namun terlambat',
-                    'attendance' => collect($attendance->load(['student:id,nama,classroom_id', 'student.classroom:id,nama']))->map(function($data, $key){
+                    'attendance' => collect($attendance->load(['student:id,nama,classroom_id', 'student.classroom:id,nama']))->map(function ($data, $key) {
                         return $data;
                     })->except('student_id', 'created_at', 'updated_at', 'student.id', 'student.classroom_id', 'student.classroom.id')
                 ]
@@ -431,7 +422,7 @@ class AttendanceController extends Controller
         if ($requestImage != null) {
             $requestImage->storeAs('attendance', $imageFileName);
         }
-        
+
         $attendance = Attendance::create([
             'student_id' => $studentIdAuth,
             'tanggal_presensi' => $tanggalSekarang,
@@ -448,7 +439,7 @@ class AttendanceController extends Controller
             'data' => [
                 'isError' => false,
                 'message' => 'Presensi Masuk berhasil',
-                'attendance' => collect($attendance->load(['student:id,nama,classroom_id', 'student.classroom:id,nama']))->map(function($data, $key){
+                'attendance' => collect($attendance->load(['student:id,nama,classroom_id', 'student.classroom:id,nama']))->map(function ($data, $key) {
                     return $data;
                 })->except('student_id', 'created_at', 'updated_at', 'student.id', 'student.classroom_id', 'student.classroom.id')
             ]
@@ -458,11 +449,11 @@ class AttendanceController extends Controller
     public function attendanceStudentHistory(Request $request)
     {
         $studentIdAuth = Auth::guard('student')->id();
-        $attendances = Attendance::withWhereHas('student', fn($query) => $query->where('id', $studentIdAuth)->withWhereHas('classroom', fn($query)=>$query))->orderByDesc('tanggal_presensi')->get();
+        $attendances = Attendance::withWhereHas('student', fn ($query) => $query->where('id', $studentIdAuth)->withWhereHas('classroom', fn ($query) => $query))->orderByDesc('tanggal_presensi')->get();
 
         return response()->json([
             'data' => [
-                'attendance' => collect($attendances)->map(function($attendance){
+                'attendance' => collect($attendances)->map(function ($attendance) {
                     return [
                         'id' => $attendance->id,
                         'student' => [
@@ -473,9 +464,9 @@ class AttendanceController extends Controller
                         ],
                         'tanggal_presensi' => $attendance->tanggal_presensi,
                         'jam_masuk' => $attendance->jam_masuk,
-                        'image_masuk' => $attendance->image_masuk == null ? null : secure_asset('storage/attendance/'. $attendance->image_masuk),
+                        'image_masuk' => $attendance->image_masuk == null ? null : secure_asset('storage/attendance/' . $attendance->image_masuk),
                         'jam_pulang' => $attendance->jam_pulang,
-                        'image_pulang' => $attendance->image_pulang == null ? null : secure_asset('storage/attendance/'.$attendance->image_pulang),
+                        'image_pulang' => $attendance->image_pulang == null ? null : secure_asset('storage/attendance/' . $attendance->image_pulang),
                         'status' => $attendance->status,
                     ];
                 }),
@@ -490,16 +481,16 @@ class AttendanceController extends Controller
         return response()->json([
             'data' => [
                 'isError' => false,
-                'leaderboards' => collect(Attendance::withWhereHas('student', fn($query) 
-                => $query->withWhereHas('classroom', fn($query)
-                => $query->where('id', $studentClassroom)))->where('tanggal_presensi', Carbon::now()->toDateString())->orderBy('jam_masuk', 'asc')->get())->map(function($data){
+                'leaderboards' => collect(Attendance::withWhereHas('student', fn ($query)
+                => $query->withWhereHas('classroom', fn ($query)
+                => $query->where('id', $studentClassroom)))->where('tanggal_presensi', Carbon::now()->toDateString())->orderBy('jam_masuk', 'asc')->get())->map(function ($data) {
                     return [
                         'id' => $data->id,
                         'tanggal_presensi' => $data->tanggal_presensi,
                         'jam_masuk' => $data->jam_masuk,
-                        'image_masuk' => $data->image_masuk == null ? secure_asset('assets/img/default.jpg') : secure_asset('storage/attendance/'.$data->image_masuk),
+                        'image_masuk' => $data->image_masuk == null ? secure_asset('assets/img/default.jpg') : secure_asset('storage/attendance/' . $data->image_masuk),
                         'jam_pulang' => $data->jam_pulang,
-                        'image_pulang' => $data->image_pulang == null ? secure_asset('assets/img/default.jpg') : secure_asset('storage/attendance/'.$data->image_pulang),
+                        'image_pulang' => $data->image_pulang == null ? secure_asset('assets/img/default.jpg') : secure_asset('storage/attendance/' . $data->image_pulang),
                         'student' => [
                             'nama' => $data->student->nama
                         ],
@@ -547,16 +538,16 @@ class AttendanceController extends Controller
             ]
         ]);
     }
-    
+
     // Guardian
     public function getAttendanceStudent()
     {
         $guardianIdAuth = Auth::guard('guardian')->id();
-        $attendances = Attendance::withWhereHas('student', fn($query)=>$query->withWhereHas('guardian', fn($query)=> $query->where('id', $guardianIdAuth)))->orderByDesc('tanggal_presensi')->get();
+        $attendances = Attendance::withWhereHas('student', fn ($query) => $query->withWhereHas('guardian', fn ($query) => $query->where('id', $guardianIdAuth)))->orderByDesc('tanggal_presensi')->get();
 
         return response()->json([
             'data' => [
-                'attendances' => collect($attendances)->map(function($attendance){
+                'attendances' => collect($attendances)->map(function ($attendance) {
                     return [
                         'id' => $attendance->id,
                         'student' => [
@@ -567,9 +558,9 @@ class AttendanceController extends Controller
                         ],
                         'tanggal_presensi' => $attendance->tanggal_presensi,
                         'jam_masuk' => $attendance->jam_masuk,
-                        'image_masuk' => $attendance->image_masuk == null ? null : secure_asset('storage/attendance/'. $attendance->image_masuk),
+                        'image_masuk' => $attendance->image_masuk == null ? null : secure_asset('storage/attendance/' . $attendance->image_masuk),
                         'jam_pulang' => $attendance->jam_pulang,
-                        'image_pulang' => $attendance->image_pulang == null ? null : secure_asset('storage/attendance/'.$attendance->image_pulang),
+                        'image_pulang' => $attendance->image_pulang == null ? null : secure_asset('storage/attendance/' . $attendance->image_pulang),
                         'status' => $attendance->status,
                     ];
                 })

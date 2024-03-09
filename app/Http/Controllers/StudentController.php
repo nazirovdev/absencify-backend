@@ -198,14 +198,14 @@ class StudentController extends Controller
 
     public function exportTemplate()
     {
-        return (new StudentGuardianExport)->download('student_guardian_template_'.Carbon::now()->microsecond.'.xlsx');
+        return (new StudentGuardianExport)->download('student_guardian_template_' . Carbon::now()->microsecond . '.xlsx');
     }
 
     public function exportPDF(Request $request)
     {
         if (Auth::guard('teacher')->user() != null) {
             $student = Student::where('classroom_id', Auth::guard('teacher')->user()->classroom_id)->get();
-        }else {
+        } else {
             $student = Student::get();
         }
 

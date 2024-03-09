@@ -48,7 +48,7 @@ class PermissionController extends Controller
             if ($request->status == 'terima') {
                 for ($x = $tanggalMulai; $x <= $tanggalAkhir; $x++) {
                     if (Agenda::where('tanggal_agenda', Carbon::create($startDate->toDateString()))->where('status', 'l')->count() == 0) {
-                        if (!Carbon::create($startDate->toDateString())->isWeekend() ) {
+                        if (!Carbon::create($startDate->toDateString())->isWeekend()) {
                             Attendance::create([
                                 'student_id' => $permission->student_id,
                                 'tanggal_presensi' => $startDate->toDateString(),
@@ -57,8 +57,8 @@ class PermissionController extends Controller
                             ]);
                         }
                     }
-    
-    
+
+
                     $startDate->addDay();
                 }
             }
@@ -83,12 +83,12 @@ class PermissionController extends Controller
             ])->post('https://fcm.googleapis.com/fcm/send', [
                 'to' => $deviceToken,
                 'data' => [
-					'title' => 'Izin Siswa',
-                    'body' => "Izin anda telah di".$status
+                    'title' => 'Izin Siswa',
+                    'body' => "Izin anda telah di" . $status
                 ],
                 'notification' => [
                     'title' => 'Izin Siswa',
-                    'body' => "Izin anda telah di".$status
+                    'body' => "Izin anda telah di" . $status
                 ]
             ]);
 
@@ -117,7 +117,7 @@ class PermissionController extends Controller
         $reqFile = $request->file('file');
         $file = null;
 
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'keterangan' => 'required',
             'tanggal_mulai' => 'required',
             'tanggal_akhir' => 'required',
@@ -235,10 +235,10 @@ class PermissionController extends Controller
     {
         $guardianIdAuth = Auth::guard('guardian')->id();
 
-        $studentPermission = collect(Permission::withWhereHas('student', fn($query)=>$query->withWhereHas('guardian', fn($query)=>$query->where('id', $guardianIdAuth)))->get());
+        $studentPermission = collect(Permission::withWhereHas('student', fn ($query) => $query->withWhereHas('guardian', fn ($query) => $query->where('id', $guardianIdAuth)))->get());
 
         return response()->json([
-            'data' => $studentPermission->map(function($permission){
+            'data' => $studentPermission->map(function ($permission) {
                 return [
                     'nama' => $permission->student->nama,
                     'tanggal_mulai' => $permission->tanggal_mulai,
